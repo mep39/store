@@ -1,73 +1,18 @@
-import { useSelector, useDispatch } from "react-redux";
-import { clearCart } from "../features/cart/cartSlice";
+import api from "../services/api";
 
 export default function Checkout() {
-  const cart = useSelector(s => s.cart);
-  const dispatch = useDispatch();
-
-  async function submit() {
-    await fetch("http://localhost:5000/api/orders", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + localStorage.token
-      },
-      body: JSON.stringify({
-        items: cart,
-        total: cart.reduce((s, i) => s + i.price * i.qty, 0)
-      })
-    });
-    dispatch(clearCart());
-    alert("Заказ оформлен");
-  }
-
-  return <button onClick={submit}>Оформить заказ</button>;
-}
-
-import { useState } from "react";
-import { useSelector } from "react-redux";
-
-export default function Checkout() {
-  const cart = useSelector(s => s.cart);
-  const [city, setCity] = useState("");
-
-  async function pay() {
-    const orderRes = await fetch("/api/orders", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + localStorage.token
-      },
-      body: JSON.stringify({
-        items: cart,
-        total: cart.reduce((s, i) => s + i.price * i.qty, 0),
-        delivery: { city }
-      })
+  const submit = async () => {
+    const order = await api.post("/orders", {
+      email: "client@mail.com",
+      phone: "+380000000",
+      items: [{ title: "Товар", price: 100, qty: 1 }],
+      total: 100,
+      delivery: { city: "Київ", warehouse: "1" },
+      payment: { method: "wayforpay" }
     });
 
-    const order = await orderRes.json();
+    alert("Замовлення створено: " + order.data._id);
+  };
 
-    const payRes = await fetch("/api/payment/pay", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + localStorage.token
-      },
-      body: JSON.stringify({ orderId: order._id })
-    });
-
-    const data = await payRes.json();
-    window.Wayforpay.run(data);
-  }
-
-  return (
-    <>
-      <input
-        placeholder="Город"
-        value={city}
-        onChange={e => setCity(e.target.value)}
-      />
-      <button onClick={pay}>Оплатить</button>
-    </>
-  );
+  return <button onClick={submit}>Оформити замовлення</button>;
 }
