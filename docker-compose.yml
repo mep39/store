@@ -1,20 +1,29 @@
 version: "3.8"
 
 services:
+  mongo:
+    image: mongo:7
+    container_name: store-mongo
+    restart: always
+    volumes:
+      - mongo_data:/data/db
+
   backend:
     build: ./backend
-    container_name: shop-backend
-    ports:
-      - "5000:5000"
-    env_file:
-      - .env
+    container_name: store-backend
+    env_file: .env
+    depends_on:
+      - mongo
     restart: always
 
   frontend:
     build: ./frontend
-    container_name: shop-frontend
+    container_name: store-frontend
     ports:
       - "80:80"
     depends_on:
       - backend
     restart: always
+
+volumes:
+  mongo_data:

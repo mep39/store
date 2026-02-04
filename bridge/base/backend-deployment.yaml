@@ -1,0 +1,49 @@
+#! backend-deployment.yaml
+# Generated code, do not edit
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: backend
+    namespace: store
+    labels:
+        com.docker.compose.project: store
+        com.docker.compose.service: backend
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            com.docker.compose.project: store
+            com.docker.compose.service: backend
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                com.docker.compose.project: store
+                com.docker.compose.service: backend
+                com.docker.compose.network.default: "true"
+        spec:
+            restartPolicy: Always
+            containers:
+                - name: store-backend
+                  image: store-backend
+                  imagePullPolicy: IfNotPresent
+                  env:
+                    - name: ADMIN_EMAIL
+                      value: "admin@store.com"
+                    - name: JWT_SECRET
+                      value: "supersecret"
+                    - name: MONGO_URI
+                      value: "mongodb://mongo:27017/store"
+                    - name: NP_API_KEY
+                      value: "test"
+                    - name: PORT
+                      value: "5000"
+                    - name: WFP_CALLBACK
+                      value: "http://localhost/api/payment/callback"
+                    - name: WFP_DOMAIN
+                      value: "localhost"
+                    - name: WFP_MERCHANT
+                      value: "test"
+                    - name: WFP_SECRET
+                      value: "test"
